@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+
+  license-plates-api:
+    container_name: license-plates-api
+    build: .
+    restart: on-failure   
+    environment:
+      PORT: ${APP_PORT}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DB_HOST: ${MYSQL_DB_HOST}
+      MYSQL_PORT_CONTAINER: ${MYSQL_PORT_CONTAINER}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    expose:
+      - ${APP_PORT}
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    depends_on:
+      - license-plates-db
+    command: bash -c ./license-plates-api  
+    networks:
+      - lp-net  
+
+  license-plates-db:
+    container_name: license-plates-db
+    image: mysql:5.7
+    ports:
+      - ${MYSQL_PORT_HOST}:${MYSQL_PORT_CONTAINER}
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+    volumes:
+      - database-mysql:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d
+    networks:
+      - lp-net 
+
+volumes:
+  database-mysql:
+
+networks:
+  lp-net:
+    driver: "bridge"   
