@@ -1,0 +1,727 @@
+{
+	"info": {
+		"_postman_id": "e9cb9ac1-1ae0-4427-8c4f-f2e457fb79e4",
+		"name": "license-plates-api-suite",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create plate successfully ",
+			"item": [
+				{
+					"name": "Before suite",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "31961ff6-3bc8-42e6-96cb-338aa63c220d",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.environment.set(\"abbreviation\", pm.variables.replaceIn(\"{{$randomAbbreviation}}\"));",
+									"pm.environment.set(\"city\", pm.variables.replaceIn(\"{{$randomCity}}\"));",
+									"pm.environment.set(\"state\", pm.variables.replaceIn(\"{{$randomWords}}\"));",
+									"pm.environment.set(\"country\", pm.variables.replaceIn(\"{{$randomCountry}}\"));",
+									"",
+									"var allPlates = pm.response.json().plates;",
+									"pm.environment.set(\"expectedPlatesNumber\", allPlates.length + 1);",
+									"",
+									"var expectedId = Number(allPlates[allPlates.length-1].id) + 1;",
+									"pm.environment.set(\"expectedId\", expectedId.toString());"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/plates",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"plates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add plate",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b9645b20-e78f-41b5-8561-2198d310e171",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"  pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Created plate matches requested\", function () {",
+									"const expectedObject = {",
+									"    \"abbreviation\": pm.environment.get(\"abbreviation\"),",
+									"    \"country\": pm.environment.get(\"country\"),",
+									"    \"state\": pm.environment.get(\"state\"),",
+									"    \"city_or_region\": pm.environment.get(\"city\")",
+									"  };",
+									"",
+									"  pm.expect(pm.response.json().plate).to.eql(expectedObject);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"abbreviation\": \"{{abbreviation}}\",\n    \"city_or_region\": \"{{city}}\",\n    \"state\": \"{{state}}\",\n    \"country\": \"{{country}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/plates",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"plates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get created plate by id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "75433a4d-4984-409f-b0c0-aaaff760e734",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Found plate matches created\", function () {",
+									"  const expectedObject = {",
+									"    \"id\": pm.environment.get(\"expectedId\"),",
+									"    \"abbreviation\": pm.environment.get(\"abbreviation\"),",
+									"    \"country\": pm.environment.get(\"country\"),",
+									"    \"state\": pm.environment.get(\"state\"),",
+									"    \"city_or_region\": pm.environment.get(\"city\")",
+									"  };",
+									"",
+									"  pm.expect(pm.response.json().plate).to.eql(expectedObject);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/plates/{{expectedId}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"plates",
+								"{{expectedId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all plates after entry creation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "08d03794-6c2c-4498-a8b4-163f5445f93a",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Compare number of plates to expected array length\", function () {",
+									"  pm.expect(pm.response.json().plates.length).to.eql(pm.environment.get(\"expectedPlatesNumber\"));",
+									"});",
+									"",
+									"pm.test(\"Check if a new plate is included in plates list\", function () {",
+									"  const expectedObject = {",
+									"    \"id\": pm.environment.get(\"expectedId\"),",
+									"    \"abbreviation\": pm.environment.get(\"abbreviation\"),",
+									"    \"country\": pm.environment.get(\"country\"),",
+									"    \"state\": pm.environment.get(\"state\"),",
+									"    \"city_or_region\": pm.environment.get(\"city\")",
+									"  };",
+									"",
+									"  var allPlates = pm.response.json().plates;",
+									"  var lastObject = allPlates[allPlates.length-1];",
+									"",
+									"  pm.expect(lastObject).to.eql(expectedObject);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/plates",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"plates"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "8cb4de07-87d0-490d-8878-e64680682dab",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "a762aa63-8b69-4bd8-b640-a2aea3d55487",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Update plate successfully",
+			"item": [
+				{
+					"name": "Before suite",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a9df81e8-c95d-417c-afe9-3348d5a8bd7b",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.environment.set(\"abbreviation\", pm.variables.replaceIn(\"{{$randomAbbreviation}}\"));",
+									"pm.environment.set(\"city\", pm.variables.replaceIn(\"{{$randomCity}}\"));",
+									"pm.environment.set(\"state\", pm.variables.replaceIn(\"{{$randomWords}}\"));",
+									"pm.environment.set(\"country\", pm.variables.replaceIn(\"{{$randomCountry}}\"));",
+									"",
+									"var allPlates = pm.response.json().plates;",
+									"pm.environment.set(\"expectedPlatesNumber\", allPlates.length + 1);",
+									"",
+									"var expectedId = Number(allPlates[allPlates.length-1].id) + 1;",
+									"pm.environment.set(\"expectedId\", expectedId.toString());",
+									"",
+									"pm.environment.set(\"abbreviationUpdated\", pm.variables.replaceIn(\"{{$randomAbbreviation}}-U{{$randomInt}}\"));",
+									"pm.environment.set(\"cityUpdated\", pm.variables.replaceIn(\"{{$randomCity}}-U{{$randomInt}}\"));",
+									"pm.environment.set(\"stateUpdated\", pm.variables.replaceIn(\"{{$randomWords}}-U{{$randomInt}}\"));",
+									"pm.environment.set(\"countryUpdated\", pm.variables.replaceIn(\"{{$randomCountry}}-U{{$randomInt}}\"));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/plates",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"plates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add plate",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "484c453d-6b1e-46fd-9aee-040235233e3f",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"  pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Created plate matches requested\", function () {",
+									"const expectedObject = {",
+									"    \"abbreviation\": pm.environment.get(\"abbreviation\"),",
+									"    \"country\": pm.environment.get(\"country\"),",
+									"    \"state\": pm.environment.get(\"state\"),",
+									"    \"city_or_region\": pm.environment.get(\"city\")",
+									"  };",
+									"",
+									"  pm.expect(pm.response.json().plate).to.eql(expectedObject);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"abbreviation\": \"{{abbreviation}}\",\n    \"city_or_region\": \"{{city}}\",\n    \"state\": \"{{state}}\",\n    \"country\": \"{{country}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/plates",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"plates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update plate",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e8a181be-271e-41e4-bae0-c0262ffe4871",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Created plate matches requested\", function () {",
+									"const expectedObject = {",
+									"    \"id\": pm.environment.get(\"expectedId\"),",
+									"    \"abbreviation\": pm.environment.get(\"abbreviationUpdated\"),",
+									"    \"country\": pm.environment.get(\"countryUpdated\"),",
+									"    \"state\": pm.environment.get(\"stateUpdated\"),",
+									"    \"city_or_region\": pm.environment.get(\"cityUpdated\")",
+									"  };",
+									"",
+									"  pm.expect(pm.response.json().plate).to.eql(expectedObject);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"abbreviation\": \"{{abbreviationUpdated}}\",\n    \"city_or_region\": \"{{cityUpdated}}\",\n    \"state\": \"{{stateUpdated}}\",\n    \"country\": \"{{countryUpdated}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/plates/{{expectedId}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"plates",
+								"{{expectedId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get updated plate by id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a286f44f-cedf-4a8a-a2a4-958b4404dffb",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Found plate matches created\", function () {",
+									"  const expectedObject = {",
+									"    \"id\": pm.environment.get(\"expectedId\"),",
+									"    \"abbreviation\": pm.environment.get(\"abbreviationUpdated\"),",
+									"    \"country\": pm.environment.get(\"countryUpdated\"),",
+									"    \"state\": pm.environment.get(\"stateUpdated\"),",
+									"    \"city_or_region\": pm.environment.get(\"cityUpdated\")",
+									"  };",
+									"",
+									"  pm.expect(pm.response.json().plate).to.eql(expectedObject);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/plates/{{expectedId}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"plates",
+								"{{expectedId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all plates after entry update",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9e9e3599-10c6-42f4-a8ff-041fdd316ae6",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Compare number of plates to expected array length\", function () {",
+									"  pm.expect(pm.response.json().plates.length).to.eql(pm.environment.get(\"expectedPlatesNumber\"));",
+									"});",
+									"",
+									"pm.test(\"Check if an updated plate is included in plates list\", function () {",
+									"  const expectedObject = {",
+									"    \"id\": pm.environment.get(\"expectedId\"),",
+									"    \"abbreviation\": pm.environment.get(\"abbreviationUpdated\"),",
+									"    \"country\": pm.environment.get(\"countryUpdated\"),",
+									"    \"state\": pm.environment.get(\"stateUpdated\"),",
+									"    \"city_or_region\": pm.environment.get(\"cityUpdated\")",
+									"  };",
+									"",
+									"  var allPlates = pm.response.json().plates;",
+									"  var lastObject = allPlates[allPlates.length-1];",
+									"",
+									"  pm.expect(lastObject).to.eql(expectedObject);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/plates",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"plates"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "a2991d29-f6d2-4729-a859-d52625d293ee",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "ea74111b-e7cc-4625-8c29-5f68f18f55ac",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Delete plate successfully",
+			"item": [
+				{
+					"name": "Before suite",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a3094fe-cae2-4811-ab1a-a33dde65fdaf",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.environment.set(\"abbreviation\", pm.variables.replaceIn(\"{{$randomAbbreviation}}\"));",
+									"pm.environment.set(\"city\", pm.variables.replaceIn(\"{{$randomCity}}\"));",
+									"pm.environment.set(\"state\", pm.variables.replaceIn(\"{{$randomWords}}\"));",
+									"pm.environment.set(\"country\", pm.variables.replaceIn(\"{{$randomCountry}}\"));",
+									"",
+									"var allPlates = pm.response.json().plates;",
+									"pm.environment.set(\"expectedPlatesNumber\", allPlates.length);",
+									"",
+									"var expectedId = Number(allPlates[allPlates.length-1].id) + 1;",
+									"pm.environment.set(\"expectedId\", expectedId.toString());"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/plates",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"plates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add plate",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "2cb4c8ce-4f56-4c9c-901b-bfb3be348697",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"  pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Created plate matches requested\", function () {",
+									"const expectedObject = {",
+									"    \"abbreviation\": pm.environment.get(\"abbreviation\"),",
+									"    \"country\": pm.environment.get(\"country\"),",
+									"    \"state\": pm.environment.get(\"state\"),",
+									"    \"city_or_region\": pm.environment.get(\"city\")",
+									"  };",
+									"",
+									"  pm.expect(pm.response.json().plate).to.eql(expectedObject);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"abbreviation\": \"{{abbreviation}}\",\n    \"city_or_region\": \"{{city}}\",\n    \"state\": \"{{state}}\",\n    \"country\": \"{{country}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/plates",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"plates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get created plate by id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "c38e5c4d-f6cb-4b43-b487-8f4884ad7dd0",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Found plate matches created\", function () {",
+									"  const expectedObject = {",
+									"    \"id\": pm.environment.get(\"expectedId\"),",
+									"    \"abbreviation\": pm.environment.get(\"abbreviation\"),",
+									"    \"country\": pm.environment.get(\"country\"),",
+									"    \"state\": pm.environment.get(\"state\"),",
+									"    \"city_or_region\": pm.environment.get(\"city\")",
+									"  };",
+									"",
+									"  pm.expect(pm.response.json().plate).to.eql(expectedObject);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/plates/{{expectedId}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"plates",
+								"{{expectedId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete plate by id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "10aac138-ee81-4fb9-be5e-99cc9889e323",
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"  pm.response.to.have.status(204);",
+									"});",
+									"",
+									"pm.test(\"Check that response body is empty\", function () {",
+									"  pm.expect(pm.response.body).to.be.undefined;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/plates/{{expectedId}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"plates",
+								"{{expectedId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all plates after entry is deleted",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a3c7f68-3cfe-4d2d-a4d9-16b26350eeed",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Compare number of plates to expected array length\", function () {",
+									"  pm.expect(pm.response.json().plates.length).to.eql(pm.environment.get(\"expectedPlatesNumber\"));",
+									"});",
+									"",
+									"pm.test(\"Check if a deleted plate is not included in plates list\", function () {",
+									"  const expectedObject = {",
+									"    \"id\": pm.environment.get(\"expectedId\"),",
+									"    \"abbreviation\": pm.environment.get(\"abbreviation\"),",
+									"    \"country\": pm.environment.get(\"country\"),",
+									"    \"state\": pm.environment.get(\"state\"),",
+									"    \"city_or_region\": pm.environment.get(\"city\")",
+									"  };",
+									"",
+									"  var allPlates = pm.response.json().plates;",
+									"  var lastObject = allPlates[allPlates.length-1];",
+									"",
+									"  pm.expect(lastObject).to.not.eql(expectedObject);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/plates",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"plates"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}

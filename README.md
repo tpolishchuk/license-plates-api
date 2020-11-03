@@ -43,6 +43,16 @@ license-plates-api    | [GIN-debug] Listening and serving HTTP on :8088
 
 Work in progress. The project is used mostly to get the fist experience with Golang
 
+## Tests
+
+To run end-to-end tests you need to install [newman](https://learning.postman.com/docs/running-collections/using-newman-cli/command-line-integration-with-newman/)
+
+After the runner is installed, navigate into the project root folder and run
+
+```
+newman run test/license-plates-api-suite.postman_collection.json -e test/local.postman_environment.json
+```
+
 ## TODOs
 
 - Add filtering by country
