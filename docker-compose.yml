@@ -19,7 +19,7 @@ services:
       - ${APP_PORT}:${APP_PORT}
     depends_on:
       - license-plates-db
-    command: bash -c ./license-plates-api  
+    command: sh -c ./license-plates-api  
     networks:
       - lp-net  
 
