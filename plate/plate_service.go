@@ -12,7 +12,7 @@ func (p *PlateService) FindAll() []Plate {
 	return p.PlateRepository.FindAll()
 }
 
-func (p *PlateService) FindByID(id uint) Plate {
+func (p *PlateService) FindByID(id uint) (Plate, error) {
 	return p.PlateRepository.FindByID(id)
 }
 

@@ -24,7 +24,13 @@ func (p *PlateAPI) FindAll(c *gin.Context) {
 
 func (p *PlateAPI) FindByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	plate := p.PlateService.FindByID(uint(id))
+	plate, err := p.PlateService.FindByID(uint(id))
+
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"plate": ToPlateDTO(plate)})
 }
@@ -33,14 +39,14 @@ func (p *PlateAPI) Create(c *gin.Context) {
 	var plateDTO PlateDTO
 	err := c.BindJSON(&plateDTO)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 		c.Status(http.StatusBadRequest)
 		return
 	}
 
 	createdPlate := p.PlateService.Save(ToPlate(plateDTO))
 
-	c.JSON(http.StatusOK, gin.H{"plate": ToPlateDTO(createdPlate)})
+	c.JSON(http.StatusCreated, gin.H{"plate": ToPlateDTO(createdPlate)})
 }
 
 func (p *PlateAPI) Update(c *gin.Context) {
@@ -48,13 +54,19 @@ func (p *PlateAPI) Update(c *gin.Context) {
 
 	err := c.BindJSON(&plateDTO)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 		c.Status(http.StatusBadRequest)
 		return
 	}
 
 	id, _ := strconv.Atoi(c.Param("id"))
-	plate := p.PlateService.FindByID(uint(id))
+	plate, err := p.PlateService.FindByID(uint(id))
+
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 
 	if plate == (Plate{}) {
 		c.Status(http.StatusBadRequest)
@@ -68,12 +80,19 @@ func (p *PlateAPI) Update(c *gin.Context) {
 
 	p.PlateService.Save(plate)
 
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, gin.H{"plate": ToPlateDTO(plate)})
 }
 
 func (p *PlateAPI) Delete(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	plate := p.PlateService.FindByID(uint(id))
+	plate, err := p.PlateService.FindByID(uint(id))
+
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
 	if plate == (Plate{}) {
 		c.Status(http.StatusBadRequest)
 		return
@@ -81,5 +100,5 @@ func (p *PlateAPI) Delete(c *gin.Context) {
 
 	p.PlateService.Delete(plate)
 
-	c.Status(http.StatusOK)
+	c.Status(http.StatusNoContent)
 }

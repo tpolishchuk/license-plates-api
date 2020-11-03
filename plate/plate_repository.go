@@ -1,6 +1,8 @@
 package plate
 
 import (
+	"errors"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
@@ -20,11 +22,15 @@ func (p *PlateRepository) FindAll() []Plate {
 	return plates
 }
 
-func (p *PlateRepository) FindByID(id uint) Plate {
+func (p *PlateRepository) FindByID(id uint) (Plate, error) {
 	var plate Plate
 	p.DB.First(&plate, id)
 
-	return plate
+	if plate.ID == 0 {
+		return Plate{}, errors.New("Plate cannot be found by a given id")
+	}
+
+	return plate, nil
 }
 
 func (p *PlateRepository) Save(plate Plate) Plate {
